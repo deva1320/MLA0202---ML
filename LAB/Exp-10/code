@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+X, y_true = make_blobs(
+    n_samples=200,
+    centers=3,
+    cluster_std=1.2,
+    random_state=42
+)
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+gmm = GaussianMixture(
+    n_components=3,
+    random_state=42,
+    n_init=5
+)
+
+gmm.fit(X_scaled)
+
+clusters = gmm.predict(X_scaled)
+
+print("EXPECTATION-MAXIMIZATION ALGORITHM")
+print("---------------------------------")
+print("Number of data points:", len(X))
+print("Number of clusters:", gmm.n_components)
+print("Number of iterations:", gmm.n_iter_)
+print("Model converged:", gmm.converged_)
+print("Silhouette Score:",
+      round(silhouette_score(X_scaled, clusters), 3))
+
+print("\nPoints in each cluster:")
+for i in range(3):
+    print("Cluster", i, ":", np.sum(clusters == i), "points")
+
+centers = scaler.inverse_transform(gmm.means_)
+
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    X[:, 0],
+    X[:, 1],
+    c=clusters,
+    cmap="viridis",
+    s=40
+)
+
+plt.scatter(
+    centers[:, 0],
+    centers[:, 1],
+    marker="X",
+    s=250,
+    color="red",
+    label="Cluster Centers"
+)
+
+plt.title("Expectation-Maximization Clustering")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.legend()
+plt.grid(True)
+plt.show()
